@@ -1,0 +1,63 @@
+.novin-date-picker {
+    font-family: Tahoma, serif;
+    font-size: .9em;
+    width: 17em;
+    padding: .2em .2em 0;
+    border: 1px solid #a6c9e2;
+    color: #222222;
+    position: absolute;
+    z-index: 1;
+    display: none;
+}
+.novin-date-picker-rtl {
+    direction: rtl;
+}
+.novin-date-picker-header {
+    position: relative;
+    padding: .2em 0;
+    border: 1px solid #4297d7;
+    color: #eaf5f7;
+    font-weight: bold;
+}
+.novin-date-picker-prev, .novin-date-picker-next {
+    margin: 3px;
+    /*z-index: 3;*/
+}
+.novin-date-picker-title {
+    text-align: center;
+}
+.novin-date-picker table {
+    width: 100%;
+    font-size: .9em;
+    border-collapse: collapse;
+    margin: 0 0 .4em;
+}
+.novin-date-picker th {
+    padding: .7em .3em;
+    text-align: center;
+    font-weight: bold;
+    border: 0;
+}
+.novin-date-picker td {
+    border: 0;
+    padding: 1px;
+}
+.novin-date-picker table {
+    width: 100%;
+    font-size: .9em;
+    border-collapse: collapse;
+    margin: 0 0 .4em;
+}
+.novin-date-picker-box-default {
+    font-weight: normal;
+    color: #ffffff;
+    outline: none;
+    text-align: center;
+    user-select: none;
+    cursor: pointer;
+}
+.novin-date-picker td span, .novin-date-picker td a {
+    display: block;
+    padding: .2em;
+    text-decoration: none;
+}
