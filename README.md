@@ -12,4 +12,10 @@ Assign datepicker:
 document.querySelector('datepicker').novinDatePicker();
 ```
 ## To Do
+- [ ] Improve UI/UX
+- [ ] Next & Previous Month
+- [ ] Support Options
 - [ ] Support Multiple Selector
+- [ ] Support Multiple Themes
+- [ ] Inline DatePicker
+- [ ] Support Different Date Formats
