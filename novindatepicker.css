@@ -7,7 +7,10 @@
     color: #222222;
     position: absolute;
     z-index: 1;
-    display: none;
+    /*display: none;*/
+    /*bottom: 100%;*/
+    /*left: 0;*/
+    background-color: white;
 }
 .novin-date-picker-rtl {
     direction: rtl;

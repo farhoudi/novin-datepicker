@@ -242,16 +242,7 @@ NovinDatePicker.mod = function(a, b) {
 NovinDatePicker.now = new Date();
 NovinDatePicker.nowJ = NovinDatePicker.toJalaali(NovinDatePicker.now.getFullYear(), NovinDatePicker.now.getMonth() + 1, NovinDatePicker.now.getDate());
 
-NovinDatePicker.monthDays = function (diff) {
-    var jDate = NovinDatePicker.dateByMonthDiff(diff);
-
-    var monthLength = NovinDatePicker.jalaaliMonthLength(jDate.jy, jDate.jm);
-    var firstDayOfMonth = NovinDatePicker.toGregorian(jDate.jy, jDate.jm, 1);
-    var lastDayOfMonth = NovinDatePicker.toGregorian(jDate.jy, jDate.jm, monthLength);
-
-    var currentDate = new Date(firstDayOfMonth.gy, firstDayOfMonth.gm - 1, firstDayOfMonth.gd);
-    var endDate = new Date(lastDayOfMonth.gy, lastDayOfMonth.gm - 1, lastDayOfMonth.gd);
-
+NovinDatePicker.getDateRangeDays = function (currentDate, endDate) {
     var between = [];
     while (currentDate <= endDate) {
         var gregorian = new Date(currentDate);
@@ -325,10 +316,10 @@ NovinDatePicker.dateByMonthDiff = function (monthDiff) {
 
 NovinDatePicker.templates = {
     calendar: '<div class="novin-date-picker-header">'+
-    '<span class="pull-left novin-date-picker-next glyphicon glyphicon-circle-arrow-left text-info" title="بعد"></span>'+
-    '<span class="pull-right novin-date-picker-prev glyphicon glyphicon-circle-arrow-right text-info" title="قبل"></span>'+
+    '<span class="pull-left novin-date-picker-next glyphicon glyphicon-circle-arrow-right text-info" id="novin-date-picker-next" title="بعد"></span>'+
+    '<span class="pull-right novin-date-picker-prev glyphicon glyphicon-circle-arrow-left text-info" id="novin-date-picker-prev" title="قبل"></span>'+
     '<div class="novin-date-picker-title text-info">'+
-    '<span class="novin-date-picker-month">اسفند</span>&nbsp;<span class="novin-date-picker-year">1395</span>'+
+    '<span class="novin-date-picker-month">TARGET_MONTH_NAME</span>&nbsp;<span class="novin-date-picker-year">TARGET_YEAR</span>'+
     '</div>'+
     '</div>'+
     '<table class="novin-date-picker-calendar">'+
@@ -353,34 +344,208 @@ NovinDatePicker.templates = {
     emptyBox : '<td>&nbsp;</td>'
 };
 
+NovinDatePicker.currentInput = null;
 
-Element.prototype.novinDatePicker = function () {
-    var datepicker = this;
-    var parent = this.parentNode;
+NovinDatePicker.createDatePickerElement = function () {
     var datepickerElement = document.createElement('div');
     datepickerElement.className = 'novin-date-picker novin-date-picker-rtl';
-    var monthDays = NovinDatePicker.templates.calendar;
+    datepickerElement.id = 'novin-date-picker-element';
+    return datepickerElement;
+    //document.body.appendChild(datepickerElement);
+};
+//NovinDatePicker.createDatePickerElement();
+NovinDatePicker.getDatePickerElement = function () {
+    return document.getElementById('novin-date-picker-element');
+};
+
+NovinDatePicker.calendarBymonthDiff = function (diff) {
+    var calendarTemplate = NovinDatePicker.templates.calendar;
+
+
+    var jDate = NovinDatePicker.dateByMonthDiff(diff);
+
+    var monthLength = NovinDatePicker.jalaaliMonthLength(jDate.jy, jDate.jm);
+    var firstDayOfMonth = NovinDatePicker.toGregorian(jDate.jy, jDate.jm, 1);
+    var lastDayOfMonth = NovinDatePicker.toGregorian(jDate.jy, jDate.jm, monthLength);
+
+    var currentDate = new Date(firstDayOfMonth.gy, firstDayOfMonth.gm - 1, firstDayOfMonth.gd);
+    var endDate = new Date(lastDayOfMonth.gy, lastDayOfMonth.gm - 1, lastDayOfMonth.gd);
+
+
+    var monthDays = NovinDatePicker.getDateRangeDays(currentDate, endDate);
+    var calendar = calendarTemplate.replace('MONTH_DAYS', monthDays);
+    calendar = calendar.replace('TARGET_YEAR', jDate.jy);
+    calendar = calendar.replace('TARGET_MONTH_NAME', NovinDatePicker.getMonthNameByNumber(jDate.jm));
+    return calendar;
+};
+
+NovinDatePicker.dismissDatePicker = function () {
+    var elem = NovinDatePicker.getDatePickerElement();
+    if (elem !== null) {
+        elem.parentNode.removeChild(elem);
+        NovinDatePicker.currentInput.classList.remove('novin-date-picker-target');
+        NovinDatePicker.isOpen = false;
+    }
+};
+
+NovinDatePicker.setButtons = function () {
+    var boxes = NovinDatePicker.getDatePickerElement().querySelectorAll('.novin-date-picker-box');
+    for (var i = 0; i < boxes.length; i++) {
+        boxes[i].addEventListener('click', function () {
+            NovinDatePicker.currentInput.value = this.getAttribute('data-year') + '-' +
+                this.getAttribute('data-month') + '-' +
+                this.getAttribute('data-day');
+            NovinDatePicker.dismissDatePicker();
+            //datePickerElement.style.display = 'none';
+        });
+    }
+};
+
+NovinDatePicker.setChangeMonthButtons = function () {
+    var nextMonth = document.getElementById('novin-date-picker-next');
+    var prevMonth = document.getElementById('novin-date-picker-prev');
+    nextMonth.addEventListener('click', function (evt) {
+        NovinDatePicker.changeMonth(1);
+    });
+    prevMonth.addEventListener('click', function (evt) {
+        NovinDatePicker.changeMonth(-1);
+    });
+};
+
+NovinDatePicker.changeMonth = function (diff) {
+    var currentDif = NovinDatePicker.currentInput.getAttribute('diff');
+    diff = parseInt(currentDif) + diff;
+    NovinDatePicker.currentInput.setAttribute('diff', diff);
+
+    var calendar = NovinDatePicker.calendarBymonthDiff(diff);
+
+    var tempCalendar = document.createElement('div');
+    tempCalendar.innerHTML = calendar;
+    var newTable = tempCalendar.getElementsByTagName('table')[0].innerHTML;
+    var newMonthName = tempCalendar.getElementsByClassName('novin-date-picker-month')[0].innerHTML;
+    var newYearName = tempCalendar.getElementsByClassName('novin-date-picker-year')[0].innerHTML;
+
+    var calendarBox = NovinDatePicker.getDatePickerElement();
+    calendarBox.getElementsByTagName('table')[0].innerHTML = newTable;
+    calendarBox.getElementsByClassName('novin-date-picker-month')[0].innerHTML = newMonthName;
+    calendarBox.getElementsByClassName('novin-date-picker-year')[0].innerHTML = newYearName;
+
+    NovinDatePicker.setButtons();
+};
+
+NovinDatePicker.getMonthNameByNumber = function (monthNumber) {
+    var monthName = '-';
+    switch (monthNumber) {
+        case 1: {
+            monthName = 'فروردین';
+            break
+        }
+        case 2: {
+            monthName = 'اردیبهشت';
+            break
+        }
+        case 3: {
+            monthName = 'خرداد';
+            break
+        }
+        case 4: {
+            monthName = 'تیر';
+            break
+        }
+        case 5: {
+            monthName = 'مرداد';
+            break
+        }
+        case 6: {
+            monthName = 'شهریور';
+            break
+        }
+        case 7: {
+            monthName = 'مهر';
+            break
+        }
+        case 8: {
+            monthName = 'آبان';
+            break
+        }
+        case 9: {
+            monthName = 'آذر';
+            break
+        }
+        case 10: {
+            monthName = 'دی';
+            break
+        }
+        case 11: {
+            monthName = 'بهمن';
+            break
+        }
+        case 12: {
+            monthName = 'اسفند';
+            break
+        }
+    }
+    return monthName;
+};
+
+NovinDatePicker.isOpen = false;
+
+NovinDatePicker.showCalendar = function () {
+    NovinDatePicker.dismissDatePicker();
+
     var diff = '0';
-    datepickerElement.setAttribute('diff', diff);
-    parent.appendChild(datepickerElement);
+    if (NovinDatePicker.currentInput.hasAttribute('diff')) {
+        diff = NovinDatePicker.currentInput.getAttribute('diff');
+    } else {
+        NovinDatePicker.currentInput.setAttribute('diff', diff);
+    }
+
+    var calendar = NovinDatePicker.calendarBymonthDiff(diff);
+
+    var calendarBox = NovinDatePicker.createDatePickerElement();
+    calendarBox.innerHTML = calendar;
+    NovinDatePicker.currentInput.parentNode.appendChild(calendarBox);
+
+    //var height = NovinDatePicker.currentInput.offsetHeight + calendarBox.offsetHeight;
+    //calendarBox.style.transform = 'translateY(-'+height+'px)';
+
+    var leftPadding = NovinDatePicker.currentInput.offsetLeft;
+    calendarBox.style.left = leftPadding + 'px';
+
+    NovinDatePicker.setButtons();
+    NovinDatePicker.setChangeMonthButtons();
+    //var datePickerBox = NovinDatePicker.getDatePickerElement();
+    //datePickerElement.innerHTML = calendar;
+    //calendarBox.style.display = 'block';
+    NovinDatePicker.isOpen = true;
+};
+
+Element.prototype.novinDatePicker = function () {
+    //var datepicker = this;
+    //var parent = this.parentNode;
+    //var diff = 0;
+    //datepickerElement.setAttribute('diff', diff);
+    //parent.appendChild(datepickerElement);
     this.addEventListener('focus', function (evt) {
         evt.preventDefault();
-        datepickerElement.style.display = 'block';
+        NovinDatePicker.currentInput = this;
+        NovinDatePicker.currentInput.classList.add('novin-date-picker-target');
+        NovinDatePicker.showCalendar();
+        //var datePickerElement = document.getElementById('novin-date-picker-element');
+        //this.parent.appendChild(datePickerElement);
+        //datePickerElement.style.display = 'block';
+        //datepickerElement.style.display = 'block';
     });
     // this.addEventListener('blur', function (evt) {
     //     evt.preventDefault();
-    //     datepickerElement.style.display = 'none';
+    //     //NovinDatePicker.dismissDatePicker();
+    //     //datepickerElement.style.display = 'none';
     // });
-    datepickerElement.innerHTML = monthDays.replace('MONTH_DAYS', NovinDatePicker.monthDays(parseInt(diff)));
-    var boxes = document.querySelectorAll('.novin-date-picker-box');
-    for (var i = 0; i < boxes.length; i++) {
-        boxes[i].addEventListener('click', function () {
-            var selectedDay = this;
-            datepicker.value = selectedDay.getAttribute('data-year') + '-' +
-                selectedDay.getAttribute('data-month') + '-' +
-                selectedDay.getAttribute('data-day');
-            datepickerElement.style.display = 'none';
-        });
+};
+
+NodeList.prototype.novinDatePicker = function() {
+    for (var i = 0; i < this.length; i++) {
+        this[i].novinDatePicker();
     }
 };
 
@@ -391,6 +556,18 @@ if (window.jQuery) {
             return this.each(function() {
                 this.novinDatePicker();
             });
-        },
+        }
     });
 }
+
+document.addEventListener('click', function(event) {
+    var elem = NovinDatePicker.getDatePickerElement();
+    if (elem === null || NovinDatePicker.isOpen !== true) {
+        return;
+    }
+    var isClickInside = elem.contains(event.target) || NovinDatePicker.currentInput.contains(event.target);
+
+    if (!isClickInside) {
+        NovinDatePicker.dismissDatePicker();
+    }
+});
