@@ -7,15 +7,20 @@ A Persian (Jalali) DatePicker used to pick Jalali date. The library uses
 Load css file and js file.
 
 ## Usage
-Assign datepicker:
+Pure JS:
 ```javascript
-document.querySelector('datepicker').novinDatePicker();
+document.querySelector('#datepicker').novinDatePicker();
+document.querySelectorAll('.datepicker').novinDatePicker();
+```
+jQuery:
+```javascript
+$('.datepicker').novinDatePicker();
 ```
 ## To Do
 - [ ] Improve UI/UX
-- [ ] Next & Previous Month
+- [x] Next & Previous Month
 - [ ] Support Options
-- [ ] Support Multiple Selector
+- [x] Support Multiple Selector
 - [ ] Support Multiple Themes
 - [ ] Inline DatePicker
 - [ ] Support Different Date Formats
